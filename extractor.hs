@@ -20,7 +20,7 @@ main = do
   args <- getArgs
   youtube <- concat <$> mapM
              (\x -> do
-                 putStrLn $ "Processing" ++ x
+                 putStrLn $ "Processing: " ++ x
                  getYoutubeUrls x)
              args
   void $ spawnProcess "vlc" youtube
