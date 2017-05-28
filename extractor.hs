@@ -1,5 +1,10 @@
+{-# LANGUAGE BangPatterns #-}
+
 import Control.Applicative
+import Control.Concurrent.Async
 import Control.Monad
+
+import Control.DeepSeq
 
 import Data.String.Utils as S
 import Data.List (intercalate)
@@ -8,6 +13,7 @@ import Network.HTTP.Conduit
 import System.Environment
 import System.Console.GetOpt
 import System.Process
+import System.IO
 import Text.HTML.TagSoup
 
 getYoutubeUrls :: String -> IO [String]
@@ -15,7 +21,7 @@ getYoutubeUrls url = do
   src <- parseTags <$> simpleHttp url
   let iframes = sections (~== "<iframe>") src
       youtubeUrls = map (C.unpack . fromAttrib (C.pack "src") . head) iframes
-  return $ map (S.replace "embed/" "watch?v=") youtubeUrls
+  let r = map (S.replace "embed/" "watch?v=") youtubeUrls in deepseq r (return r)
 
 data Flag = PrintOnly | Download
   deriving (Eq, Ord, Show)
@@ -28,9 +34,10 @@ options =
 
 main :: IO ()
 main = do
+  hSetBuffering stdout LineBuffering
   args <- getArgs
   let (flags, links, _) = getOpt RequireOrder options args
-  youtube <- concat <$> mapM
+  youtube <- concat <$> mapConcurrently
              (\x -> do
                  putStrLn $ "Processing: " ++ x
                  getYoutubeUrls x)
