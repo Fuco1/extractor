@@ -1,6 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
-
-import Control.Applicative
 import Control.Concurrent.Async
 import Control.Monad
 

@@ -31,6 +31,6 @@ executable extractor
                      , process >= 1.4
                      , utf8-string >= 1.0
                      , MissingH >= 1.4
-                     , unix
+                     , unix >= 2.7
   -- hs-source-dirs:
   default-language:    Haskell2010
