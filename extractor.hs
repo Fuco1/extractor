@@ -17,12 +17,13 @@ getYoutubeUrls url = do
       youtubeUrls = map (C.unpack . fromAttrib (C.pack "src") . head) iframes
   return $ map (S.replace "embed/" "watch?v=") youtubeUrls
 
-data Flag = PrintOnly
+data Flag = PrintOnly | Download
   deriving (Eq, Ord, Show)
 
 options :: [OptDescr Flag]
 options =
   [ Option "p" ["print"] (NoArg PrintOnly) "Print the extracted links to stdout"
+  , Option "d" ["download"] (NoArg Download) "Download extracted links to with youtube-dl"
   ]
 
 main :: IO ()
@@ -36,4 +37,6 @@ main = do
              links
   if PrintOnly `elem` flags
     then putStrLn $ intercalate "\n" youtube
-    else void $ spawnProcess "vlc" youtube
+    else if Download `elem` flags
+         then void $ spawnProcess "youtube-dl" youtube
+         else void $ spawnProcess "vlc" youtube
