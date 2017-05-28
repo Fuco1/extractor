@@ -14,6 +14,8 @@ import System.Environment
 import System.Console.GetOpt
 import System.Process
 import System.IO
+import System.Posix.Terminal (queryTerminal)
+import System.Posix.IO (stdOutput)
 import Text.HTML.TagSoup
 
 getYoutubeUrls :: String -> IO [String]
@@ -35,15 +37,21 @@ options =
 main :: IO ()
 main = do
   hSetBuffering stdout LineBuffering
+  hSetBuffering stderr LineBuffering
   args <- getArgs
   let (flags, links, _) = getOpt RequireOrder options args
   youtube <- concat <$> mapConcurrently
              (\x -> do
-                 putStrLn $ "Processing: " ++ x
+                 hPutStrLn stderr $ "Processing: " ++ x
                  getYoutubeUrls x)
              links
   if PrintOnly `elem` flags
-    then putStrLn $ intercalate "\n" youtube
+    then do
+      istty <- queryTerminal stdOutput
+      putStrLn
+        (if istty
+          then intercalate "\n" youtube
+          else unwords youtube)
     else if Download `elem` flags
          then void $ spawnProcess "youtube-dl" youtube
          else void $ spawnProcess "vlc" youtube
