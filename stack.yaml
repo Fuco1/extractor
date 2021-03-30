@@ -1,12 +1,7 @@
-resolver: lts-7.19
+resolver: lts-12.18
 
 packages:
   - '.'
-
-extra-deps:
-  - http-conduit-2.2.3.1
-  - http-client-0.5.6.1
-  - http-client-tls-0.3.4.2
 
 flags: {}
 
